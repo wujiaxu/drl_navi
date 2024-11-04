@@ -1,0 +1,62 @@
+Bootstrap: docker
+# Registry: http://localhost:5000
+From: nvidia/cuda:11.8.0-base-ubuntu20.04
+
+%post
+    # Get Mojuco
+    # apt-get update && apt-get install -y wget
+    # mkdir "$HOME/.mujoco"
+    # wget https://github.com/google-deepmind/mujoco/releases/download/2.1.1/mujoco-2.1.1-linux-x86_64.tar.gz -O mujoco-release-tmp.tar.gz
+    # tar -zxvf mujoco-release-tmp.tar.gz -C "$HOME/.mujoco"
+    # rm -rf "mujoco-release-tmp.tar.gz"
+
+    # Update and install necessary system packages
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update && apt-get install -y \
+        python3 \
+        python3-pip \
+        python3-venv \
+        libglib2.0-0 \
+        python3-tk \
+        git \
+        && apt-get clean
+
+    # Update and install necessary system packages for mojuco
+    # apt-get install -y libosmesa6-dev
+    # apt-get install -y libgl1-mesa-glx 
+    # apt-get install -y libglfw3 
+    # apt-get install -y libglew-dev   
+    # apt-get install -y libglew2.0 
+    # apt-get install -y libegl-dev 
+    # apt-get clean
+
+    # Upgrade pip
+    pip install --upgrade pip
+
+    # Create a Python virtual environment
+    python3 -m venv /env
+    . /env/bin/activate
+
+    # get pytorch-cuda
+    pip install networkx==3.1 
+    pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu118
+
+    # get project
+    git clone --branch controllable_navi https://github.com/wujiaxu/TCALF.git /opt/TCALF
+
+    # Install pip requirements
+    pip install -r /opt/TCALF/requirements.txt
+
+%environment
+    # Set up environment variables
+    source /env/bin/activate
+    export PATH=/env/bin:$PATH
+    export PROJECT_HOME=/opt/TCALF
+
+%runscript
+    # This script will be executed when the container runs
+    exec "$@"
+
+%labels
+    Author WUJIAXU
+    Version 1.0
